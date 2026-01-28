@@ -1,0 +1,7 @@
+{"type": "join", "nick": "Alice", "text": "", "ts": "2026-01-06T06:52:49.683278Z", "id": "9225846c-0c7e-4e4d-9764-09a5c428e9af", "source": "local"}
+{"type": "join", "nick": "Bob", "text": "", "ts": "2026-01-06T06:55:43.123865Z", "id": "baf24977-bd18-48b4-b0e8-53e35b11d63c", "source": "local"}
+{"type": "message", "nick": "Bob", "text": "Hi", "ts": "2026-01-06T06:55:49.225316Z", "id": "4e199fbb-d90a-410d-80ab-f80158d51bc3", "source": "local"}
+{"type": "message", "nick": "Alice", "text": "Hello", "ts": "2026-01-06T06:56:20.653179Z", "id": "80d8bceb-6ca1-4f52-9528-42f8a6abc603", "source": "local"}
+{"type": "join", "nick": "Bob", "text": "", "ts": "2026-01-12T12:44:15.671883Z", "id": "bf1a48be-5680-4b7b-9b44-7f8106da46d6", "source": "local"}
+{"type": "join", "nick": "Tom", "text": "", "ts": "2026-01-12T12:45:38.767631Z", "id": "7cfe24f2-ab97-439b-8b92-9f6c7f89f530", "source": "local"}
+{"type": "message", "nick": "Tom", "text": "Hi", "ts": "2026-01-12T12:45:42.552379Z", "id": "b9c0cc07-1a2b-41ae-96c2-2159af4e06e7", "source": "local"}

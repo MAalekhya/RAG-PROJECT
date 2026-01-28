@@ -1,0 +1,4 @@
+# Optional dev/test deps
+pytest>=7.0
+# Optional: aioconsole for async stdin
+# aioconsole>=0.3.0
