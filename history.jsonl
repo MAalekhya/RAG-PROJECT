@@ -17,3 +17,7 @@
 {"type": "leave", "nick": "Raga", "text": "", "ts": "2026-01-28T07:02:08.353190Z", "id": "c87a89ef-b398-45ca-939c-911f4b75b3f2", "source": "local"}
 {"type": "join", "nick": "Raga", "text": "", "ts": "2026-01-28T07:02:10.679947Z", "id": "3a2452a6-519a-4f56-9c25-5737755b2fee", "source": "local"}
 {"type": "message", "nick": "Raga", "text": "hi", "ts": "2026-01-28T07:02:20.220359Z", "id": "8f1b6c3d-b2d6-42f9-814a-9b776ee92abb", "source": "local"}
+{"type": "join", "nick": "YourName", "text": "", "ts": "2026-01-29T12:16:46.380928Z", "id": "bb26dd58-34d1-48da-8902-9b0ab24f0847", "source": "local"}
+{"type": "join", "nick": "Harry", "text": "", "ts": "2026-01-29T12:17:43.527829Z", "id": "41205e96-a47f-4e2c-8a0b-821b85143177", "source": "local"}
+{"type": "message", "nick": "Harry", "text": "helllo", "ts": "2026-01-29T12:17:49.444519Z", "id": "8e350a36-dd93-41a1-acc3-17df6492ecf3", "source": "local"}
+{"type": "leave", "nick": "YourName", "text": "", "ts": "2026-01-29T12:20:44.684243Z", "id": "c708be47-99a1-4ee7-9c91-9bc41253edf8", "source": "local"}

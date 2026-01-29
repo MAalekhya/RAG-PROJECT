@@ -6,7 +6,7 @@ import uuid  # generate unique IDs for messages
 import datetime  # get timestamps
 import os  # filesystem helpers
 import sys  # system utilities (unused but common)
-from message_handler import create_message, dump_message, parse_message  # helper functions for messages
+from .message_handler import create_message, dump_message, parse_message  # helper functions for messages
 
 
 def get_current_utc_timestamp():

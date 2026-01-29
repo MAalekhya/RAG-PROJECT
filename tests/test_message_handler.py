@@ -1,5 +1,9 @@
 import json
-from message_handler import create_message, dump_message, parse_message
+import sys
+import os
+# Add src directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+from core.message_handler import create_message, dump_message, parse_message
 
 
 def test_create_and_parse_message_roundtrip():

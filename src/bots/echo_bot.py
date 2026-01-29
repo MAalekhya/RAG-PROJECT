@@ -2,7 +2,10 @@ import argparse
 import threading
 import time
 import os
-from message_handler import parse_message, create_message, dump_message
+import sys
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+from core.message_handler import parse_message, create_message, dump_message
 
 
 def monitor_history_file(history_file: str, stop_event: threading.Event, on_message_received, poll_interval: float = 0.5):
