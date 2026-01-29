@@ -13,7 +13,7 @@ What it shows:
 
 
 import os
-
+# Note: This example is tailored for Windows paths (C:/).
 def main():
     # Define your base directory on C:
     # Note: Writing directly to C:\ often fails due to permissions. 

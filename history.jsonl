@@ -5,3 +5,15 @@
 {"type": "join", "nick": "Bob", "text": "", "ts": "2026-01-12T12:44:15.671883Z", "id": "bf1a48be-5680-4b7b-9b44-7f8106da46d6", "source": "local"}
 {"type": "join", "nick": "Tom", "text": "", "ts": "2026-01-12T12:45:38.767631Z", "id": "7cfe24f2-ab97-439b-8b92-9f6c7f89f530", "source": "local"}
 {"type": "message", "nick": "Tom", "text": "Hi", "ts": "2026-01-12T12:45:42.552379Z", "id": "b9c0cc07-1a2b-41ae-96c2-2159af4e06e7", "source": "local"}
+{"type": "join", "nick": "Raga", "text": "", "ts": "2026-01-28T06:45:28.362768Z", "id": "c95b4b3d-7330-470e-ab6c-8864d5f1fe9e", "source": "local"}
+{"type": "message", "nick": "Raga", "text": "hi", "ts": "2026-01-28T06:45:35.032935Z", "id": "ca18f10c-5a30-4b24-bf22-a3dd15d0ed5e", "source": "local"}
+{"type": "join", "nick": "Joe", "text": "", "ts": "2026-01-28T06:45:57.573436Z", "id": "c02d7bf9-6ca3-4ce2-84d2-249c758354f6", "source": "local"}
+{"type": "message", "nick": "Joe", "text": "hi", "ts": "2026-01-28T06:46:01.617484Z", "id": "8fe55919-af44-4cb1-b22e-50824b4507a2", "source": "local"}
+{"type": "join", "nick": "Joe", "text": "", "ts": "2026-01-28T06:58:22.681050Z", "id": "4f9010ef-596c-49c9-ad59-dc9d6db380b9", "source": "local"}
+{"type": "message", "nick": "Joe", "text": "Hello", "ts": "2026-01-28T06:58:31.865557Z", "id": "4a605d3d-8dca-49f5-a356-eefddda2671b", "source": "local"}
+{"type": "message", "nick": "Raga", "text": "Good day!", "ts": "2026-01-28T06:58:57.059124Z", "id": "2a6975d8-ef1d-4291-aeaa-00f1d86f99e6", "source": "local"}
+{"type": "leave", "nick": "Joe", "text": "", "ts": "2026-01-28T07:01:30.458496Z", "id": "95f01852-5f23-43c9-bd4d-6ff7555775ca", "source": "local"}
+{"type": "join", "nick": "Joe", "text": "", "ts": "2026-01-28T07:01:36.738676Z", "id": "59533f11-f3b6-456a-b502-9c1a3e83f519", "source": "local"}
+{"type": "leave", "nick": "Raga", "text": "", "ts": "2026-01-28T07:02:08.353190Z", "id": "c87a89ef-b398-45ca-939c-911f4b75b3f2", "source": "local"}
+{"type": "join", "nick": "Raga", "text": "", "ts": "2026-01-28T07:02:10.679947Z", "id": "3a2452a6-519a-4f56-9c25-5737755b2fee", "source": "local"}
+{"type": "message", "nick": "Raga", "text": "hi", "ts": "2026-01-28T07:02:20.220359Z", "id": "8f1b6c3d-b2d6-42f9-814a-9b776ee92abb", "source": "local"}

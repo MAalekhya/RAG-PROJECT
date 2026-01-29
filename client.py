@@ -27,6 +27,8 @@ def tail_history(history_file: str, stop_event: threading.Event, on_message, pol
         f.seek(0, os.SEEK_END)  # move to the end of file so we only see new lines
         while not stop_event.is_set():  # loop until told to stop
             line = f.readline()  # try to read a line
+            print("Read line from the file :")
+            print(line)
             if not line:  # no new line yet
                 time.sleep(poll)  # wait a bit before checking again
                 continue
