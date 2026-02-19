@@ -1,120 +1,216 @@
-#!/usr/bin/env python3
-"""Simple Gemini chat CLI.
+"""Gemini Chat with Native Function Calling — get_current_datetime tool.
+
+This module provides an interactive chat loop with the Gemini model using the
+official Google Generative AI SDK's native function-calling feature.
+
+The model can request the `get_current_datetime` tool which returns the
+current local date and time. The SDK handles the tool-call/response turn
+automatically through a multi-turn conversation.
 
 Usage:
-  - Set environment variable `GOOGLE_API_KEY` with your API key.
-  - Run: python gemini_chat.py --prompt "Hello" or
-    python gemini_chat.py --interactive
-
-This script tries to use the Generative Language REST endpoint directly
-so it can run without additional Google client libraries.
+    python gemini_chat.py
 """
 from __future__ import annotations
 
-import argparse
 import os
-import sys
-import json
-from typing import Optional
+from datetime import datetime
 
-try:
-    import requests
-except Exception:
-    requests = None
+from dotenv import load_dotenv
+import google.generativeai as genai
+from google.generativeai import types
 
-try:
-    import google.generativeai as genai
-except Exception:
-    genai = None
+# ---------------------------------------------------------------------------
+# Environment setup
+# ---------------------------------------------------------------------------
+load_dotenv()
 
-
-DEFAULT_MODEL = "gemini-3-flash-preview"
-
-
-def get_api_key(cmd_key: Optional[str]) -> Optional[str]:
-    if cmd_key:
-        return cmd_key
-    return os.environ.get("GOOGLE_API_KEY")
-
-
-def call_gemini(api_key: str, model: str, prompt: str, temperature: float = 0.2, max_output_tokens: int = 512) -> str:
-    """Call Gemini. Prefer the `google.generativeai` client (same as `gemini_bot`).
-
-    If the client lib is available, use it with the same call pattern as
-    `src/bots/gemini_bot.py`. Otherwise, provide a clear error explaining
-    that the preferred client is missing.
-    """
-    if genai is not None:
-        try:
-            genai.configure(api_key=api_key)
-            model_client = genai.GenerativeModel(model)
-            # Use same call used in the bot
-            resp = model_client.generate_content(prompt)
-            # Response object exposes `.text` like in the bot
-            return getattr(resp, "text", str(resp)).strip()
-        except Exception as e:
-            raise RuntimeError(f"Gemini client error: {e}")
-
-    # If we reach here, `google.generativeai` is not installed.
-    raise RuntimeError(
-        "google-generativeai client not installed. Install with: pip install google-generativeai"
-        "\n(Alternatively install 'requests' and implement a REST payload matching the Generative Language API.)"
+API_KEY = os.getenv("GOOGLE_API_KEY") or os.getenv("chatkey1")
+if not API_KEY:
+    raise EnvironmentError(
+        "No Gemini API key found. Set GOOGLE_API_KEY in your .env file."
     )
-    
+
+genai.configure(api_key=API_KEY)
+
+# ---------------------------------------------------------------------------
+# Tool definition (function declaration for the SDK)
+# ---------------------------------------------------------------------------
+get_datetime_tool = types.FunctionDeclaration(
+    name="get_current_datetime",
+    description=(
+        "Returns the current local date and time. "
+        "Call this whenever the user asks about the current time, date, or datetime."
+    ),
+    parameters={
+        "type": "object",
+        "properties": {},   # no parameters needed
+        "required": [],
+    },
+)
+
+TOOLS = types.Tool(function_declarations=[get_datetime_tool])
+
+# ---------------------------------------------------------------------------
+# Tool implementation
+# ---------------------------------------------------------------------------
+
+def get_current_datetime() -> dict:
+    """Return the current local datetime as a structured dict."""
+    now = datetime.now()
+    return {
+        "date": now.strftime("%Y-%m-%d"),
+        "time": now.strftime("%H:%M:%S"),
+        "datetime": now.strftime("%Y-%m-%d %H:%M:%S"),
+        "day_of_week": now.strftime("%A"),
+        "timezone": "local",
+    }
 
 
-def interactive_loop(api_key: str, model: str) -> None:
-    print(f"Gemini chat (model={model}). Type /quit to exit.")
+# Map tool names → callables so we can dispatch easily
+TOOL_REGISTRY: dict[str, callable] = {
+    "get_current_datetime": get_current_datetime,
+}
+
+# ---------------------------------------------------------------------------
+# Model setup
+# ---------------------------------------------------------------------------
+MODEL_NAME = "gemini-1.5-flash"
+
+model = genai.GenerativeModel(
+    model_name=MODEL_NAME,
+    tools=[TOOLS],
+    system_instruction=(
+        "You are a helpful assistant. When the user asks about the current date "
+        "or time, always use the get_current_datetime tool to fetch accurate "
+        "real-time information rather than guessing."
+    ),
+)
+
+# ---------------------------------------------------------------------------
+# Chat helpers
+# ---------------------------------------------------------------------------
+
+def handle_function_calls(response) -> list[types.Part]:
+    """Execute any function calls requested by the model and return tool-result parts."""
+    result_parts: list[types.Part] = []
+
+    # Gemini API → Agent: inspect each part of the model's response for tool call requests
+    print("\n" + "-" * 50)
+    print("[STEP 2] Gemini API → Agent")
+    print("         Gemini has replied. Agent is now checking")
+    print("         if Gemini wants to call a tool...")
+
+    for part in response.parts:
+        # Agent decides: does this part contain a tool call request from Gemini?
+        if not part.function_call:
+            continue
+
+        fn_name = part.function_call.name
+        fn_args = dict(part.function_call.args) if part.function_call.args else {}
+
+        # Gemini API → Agent: model has decided to call a tool; agent reads the request
+        print(f"\n[STEP 3] Gemini API → Agent (Tool Request)")
+        print(f"         Gemini says: 'Please call the tool: {fn_name}'")
+        print(f"         Arguments Gemini passed: {fn_args}")
+
+        # Agent → Tool: agent dispatches the tool call locally
+        print(f"\n[STEP 4] Agent → Tool")
+        print(f"         Agent is now running the local function: {fn_name}()")
+        if fn_name in TOOL_REGISTRY:
+            output = TOOL_REGISTRY[fn_name](**fn_args)  # Agent → Tool: execute tool
+            # Tool → Agent: tool returns result
+            print(f"\n[STEP 5] Tool → Agent")
+            print(f"         Tool '{fn_name}' finished and returned the result:")
+            print(f"         {output}")
+        else:
+            output = {"error": f"Unknown tool: {fn_name}"}
+            print(f"\n[STEP 5] Tool → Agent (ERROR)")
+            print(f"         Tool '{fn_name}' not found! Error: {output}")
+
+        # Agent → Gemini API: wrap the tool result and send it back to the model
+        print(f"\n[STEP 6] Agent → Gemini API (Tool Result)")
+        print(f"         Agent is sending the tool result back to Gemini...")
+        result_parts.append(
+            types.Part.from_function_response(
+                name=fn_name,
+                response={"result": output},
+            )
+        )
+
+    return result_parts
+
+
+def chat_turn(chat: genai.ChatSession, user_input: str) -> str:
+    """Send a user message, handle any tool calls, and return the final reply."""
+
+    # User → Agent → Gemini API: agent forwards the user message to the model
+    print("\n" + "=" * 50)
+    print("[STEP 1] User → Agent → Gemini API")
+    print(f"         User said: '{user_input}'")
+    print("         Agent is sending this message to Gemini API...")
+    response = chat.send_message(user_input)
+
+    # Agentic loop: keep handling tool calls until the model produces text
+    while True:
+        # Agent decides: did Gemini request a tool call in its response?
+        tool_result_parts = handle_function_calls(response)
+
+        if not tool_result_parts:  # Agent decides: no tool call → Gemini produced final text
+            print("\n[STEP 2b] Agent decides: No tool call needed.")
+            print("          Gemini produced a direct text response. Done!")
+            print("-" * 50)
+            break  # no tool calls → model has produced its final text response
+
+        # Agent → Gemini API: send tool results back so Gemini can form its final reply
+        print("\n[STEP 7] Agent → Gemini API (Final Request)")
+        print("         Agent is sending the tool result back to Gemini.")
+        print("         Asking Gemini to now form its final answer using the tool result...")
+        response = chat.send_message(tool_result_parts)
+        print("\n[STEP 8] Gemini API → Agent (Final Response)")
+        print("         Gemini has used the tool result to form its final reply.")
+        print("-" * 50)
+
+    # Gemini API → Agent → User: return the model's final text response
+    print("\n[STEP 9] Gemini API → Agent → User")
+    print("         Agent is returning Gemini's final answer to the user.")
+    print("=" * 50)
+    return response.text.strip()
+
+
+# ---------------------------------------------------------------------------
+# Interactive chat loop
+# ---------------------------------------------------------------------------
+
+def main() -> None:
+    print("=" * 60)
+    print("  Gemini Chat with Function Calling")
+    print(f"  Model : {MODEL_NAME}")
+    print("  Tool  : get_current_datetime")
+    print("  Type  'quit' or 'exit' to stop.")
+    print("=" * 60)
+    print()
+
+    chat = model.start_chat()
+
     while True:
         try:
-            prompt = input("You: ")
+            user_input = input("You: ").strip()
         except (EOFError, KeyboardInterrupt):
-            print("\nExiting.")
-            return
+            print("\nGoodbye!")
+            break
 
-        if not prompt:
+        if not user_input:
             continue
-        if prompt.strip() in ("/quit", "/exit"):
-            print("Bye.")
-            return
+
+        if user_input.lower() in {"quit", "exit", "bye"}:
+            print("Goodbye!")
+            break
 
         try:
-            out = call_gemini(api_key, model, prompt)
-            print("Gemini:", out)
-        except Exception as e:
-            print("Error:", e)
-
-
-def main():
-    parser = argparse.ArgumentParser(description="Simple Gemini chat client")
-    parser.add_argument("--model", default=DEFAULT_MODEL, help="Model name (default: %(default)s)")
-    parser.add_argument("--key", help="API key (overrides GOOGLE_API_KEY env var)")
-    parser.add_argument("--prompt", help="Single-shot prompt to send")
-    parser.add_argument("--interactive", action="store_true", help="Run interactive chat loop")
-    parser.add_argument("--temperature", type=float, default=0.2)
-    parser.add_argument("--max-tokens", type=int, default=512)
-
-    args = parser.parse_args()
-
-    api_key = get_api_key(args.key)
-    print("API Key:", api_key)
-    if not api_key:
-        print("ERROR: No API key provided. Set GOOGLE_API_KEY or pass --key.")
-        sys.exit(2)
-
-    if args.interactive:
-        interactive_loop(api_key, args.model)
-        return
-
-    if args.prompt:
-        try:
-            out = call_gemini(api_key, args.model, args.prompt, temperature=args.temperature, max_output_tokens=args.max_tokens)
-            print(out)
-        except Exception as e:
-            print("Error:", e)
-            sys.exit(1)
-    else:
-        parser.print_help()
+            reply = chat_turn(chat, user_input)
+            print(f"\nGemini: {reply}\n")
+        except Exception as exc:  # noqa: BLE001
+            print(f"\n[error] {exc}\n")
 
 
 if __name__ == "__main__":
